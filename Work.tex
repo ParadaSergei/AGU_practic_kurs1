@@ -1,0 +1,100 @@
+\UseRawInputEncoding
+%% -*- coding: utf-8 -*-
+\documentclass[12pt,a4paper]{scrartcl} 
+\usepackage[utf8]{inputenc}
+\usepackage[T2A]{fontenc} 
+\usepackage[english,russian]{babel}
+\usepackage{indentfirst}
+\usepackage{misccorr}
+\usepackage{graphicx}
+\usepackage{amsmath}
+\usepackage{listings} 
+\lstset{
+  basicstyle=\ttfamily\small,
+  breaklines=true,
+  showstringspaces=false,
+  extendedchars=true
+}
+\begin{document}
+\section{Введение}
+\label{sec:intro}
+\begin{enumerate}
+ \item \textbf{Текстовая формулировка задачи:} Нахождение ранга матрицы методом Гаусса.
+ \item \textbf{Пример кода:} Представлен в разделе~\ref{sec:exp:code}.
+ \item \textbf{График:} Для данного метода используется матричное представление.
+ \item \textbf{Скриншот программы:} Представлен в разделе~\ref{sec:picexample}.
+\end{enumerate}
+\section{Ход работы}
+\label{sec:exp}
+
+\subsection{Код приложения}
+\label{sec:exp:code}
+\begin{lstlisting}[language=Python]
+import numpy as np
+def get_matrix_from_input():
+    try:
+        rows = int(input("Enter the number of lines: "))
+        if rows <= 0: raise ValueError("The number of rows should be > 0")
+        matrix = []
+        for i in range(rows):
+            row = list(map(float, input(f"Enter the elements of the {i+1}-th row separated by spaces: ").split()))
+            matrix.append(row)
+            
+        if len(set(len(r) for r in matrix)) > 1:
+            raise ValueError("All lines must have the same length!")
+        return matrix
+    except ValueError as e:
+        print(f"Input error: {e}")
+        return None
+def calculate_rank(matrix):
+    A = np.array(matrix, dtype=float)
+    rows, cols = A.shape
+    rank = 0
+    pivot_row = 0
+    for j in range(cols):
+        if pivot_row >= rows:
+            break
+            
+        max_idx = np.argmax(np.abs(A[pivot_row:, j])) + pivot_row
+        if np.isclose(A[max_idx, j], 0):
+            continue
+        A[[pivot_row, max_idx]] = A[[max_idx, pivot_row]]
+        
+        for i in range(pivot_row + 1, rows):
+            factor = A[i, j] / A[pivot_row, j]
+            A[i, j:] -= factor * A[pivot_row, j:]
+            
+        pivot_row += 1
+        rank += 1
+    return rank
+matrix_data = get_matrix_from_input()
+if matrix_data is not None:
+    rank = calculate_rank(matrix_data)
+    print(f"The rank of the matrix is: {rank}")
+\end{lstlisting}
+\subsection{Математическая постановка}
+\label{sec:mathexample}
+Ранг матрицы определяется через приведение к трапецеидальному виду:
+\begin{equation}\label{eq:matrix}
+ A_{m \times n} = \begin{pmatrix} 
+ a_{11} & a_{12} & \dots & a_{1n} \\
+ 0 & a_{22} & \dots & a_{2n} \\
+ \dots & \dots & \dots & \dots \\
+ 0 & 0 & \dots & 0
+ \end{pmatrix}
+\end{equation}
+\section{Пример вставки изображения}
+\label{sec:picexample}
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.5\textwidth]{BeginCode.png} 
+    \caption{Трапециевидная матрица}\label{fig:matrix}
+\end{figure}
+
+\section{Список литературы}
+\begin{thebibliography}{9}
+\bibitem{Knuth-2003}Кнут Д.Э. Всё про \TeX. --- Москва: Изд. Вильямс, 2003 г. [cite: 4]
+\bibitem{Lvovsky-2003}Львовский С.М. Набор и верстка в системе \LaTeX{}. --- 3-е издание, 2003 г. [cite: 4]
+\bibitem{Voroncov-2005}Воронцов К.В. \LaTeX{} в примерах. 2005 г. [cite: 4]
+\end{thebibliography}
+\end{document}
