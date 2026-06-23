@@ -19,82 +19,116 @@
 \section{Введение}
 \label{sec:intro}
 \begin{enumerate}
- \item \textbf{Текстовая формулировка задачи:} Нахождение ранга матрицы методом Гаусса.
- \item \textbf{Пример кода:} Представлен в разделе~\ref{sec:exp:code}.
- \item \textbf{График:} Для данного метода используется матричное представление.
- \item \textbf{Скриншот программы:} Представлен в разделе~\ref{sec:picexample}.
+ \item \textbf{Задача №1:} Решить уравнение f(x) = 0 с точностью до 0,01, методом бисекции отрезка и методом секущих.
+ \item \textbf{Задача №2:} Решить систему линейных уравнений АХ=В с точностью до 0,01, методом Гаусса
+ \item \textbf{Пример задачи №1:} Представлен в разделе.~\ref{sec:exp:example1}.
+ \item \textbf{Пример  задачи №2:} Представлен в разделе.~\ref{sec:exp:example2}.
+ \item \textbf{Кода задачи №1:} Представлен в разделе.~\ref{sec:exp:code1}.
+ \item \textbf{Кода задачи №2:} Представлен в разделе.~\ref{sec:exp:code2}.
+ \item \textbf{Скриншот программы:} Представлен в разделе~\ref{sec:Conclusion}.
+ \item \textbf{Литература:} Представлен в разделе~\ref{sec:literature}.
+ 
 \end{enumerate}
 \section{Ход работы}
-\label{sec:exp}
-
-\subsection{Код приложения}
-\label{sec:exp:code}
-\begin{lstlisting}[language=Python]
-import numpy as np
-def get_matrix_from_input():
-    try:
-        rows = int(input("Enter the number of lines: "))
-        if rows <= 0: raise ValueError("The number of rows should be > 0")
-        matrix = []
-        for i in range(rows):
-            row = list(map(float, input(f"Enter the elements of the {i+1}-th row separated by spaces: ").split()))
-            matrix.append(row)
-            
-        if len(set(len(r) for r in matrix)) > 1:
-            raise ValueError("All lines must have the same length!")
-        return matrix
-    except ValueError as e:
-        print(f"Input error: {e}")
-        return None
-def calculate_rank(matrix):
-    A = np.array(matrix, dtype=float)
-    rows, cols = A.shape
-    rank = 0
-    pivot_row = 0
-    for j in range(cols):
-        if pivot_row >= rows:
-            break
-            
-        max_idx = np.argmax(np.abs(A[pivot_row:, j])) + pivot_row
-        if np.isclose(A[max_idx, j], 0):
-            continue
-        A[[pivot_row, max_idx]] = A[[max_idx, pivot_row]]
-        
-        for i in range(pivot_row + 1, rows):
-            factor = A[i, j] / A[pivot_row, j]
-            A[i, j:] -= factor * A[pivot_row, j:]
-            
-        pivot_row += 1
-        rank += 1
-    return rank
-matrix_data = get_matrix_from_input()
-if matrix_data is not None:
-    rank = calculate_rank(matrix_data)
-    print(f"The rank of the matrix is: {rank}")
-\end{lstlisting}
-\subsection{Математическая постановка}
-\label{sec:mathexample}
-Ранг матрицы определяется через приведение к трапецеидальному виду:
-\begin{equation}\label{eq:matrix}
- A_{m \times n} = \begin{pmatrix} 
- a_{11} & a_{12} & \dots & a_{1n} \\
- 0 & a_{22} & \dots & a_{2n} \\
- \dots & \dots & \dots & \dots \\
- 0 & 0 & \dots & 0
- \end{pmatrix}
+\label{sec:exp:example1}
+\subsection{Вариант 35 пример первой задачи}
+\begin{equation}
+lg(x+5)=cosx [-5<x<5]
 \end{equation}
-\section{Пример вставки изображения}
-\label{sec:picexample}
+\subsection{Вариант 35 пример второй задачи}
+\label{sec:exp:example2}
 \begin{figure}[h]
     \centering
-    \includegraphics[width=0.5\textwidth]{BeginCode.png} 
-    \caption{Трапециевидная матрица}\label{fig:matrix}
+    \includegraphics[width=0.5\textwidth]{linear_algebraic_equations.jpg} 
+\end{figure}
+\label{sec:exp}
+\subsection{Код №1 приложения main.py}
+\label{sec:exp:code1}
+\begin{lstlisting}[language=Python]
+import math
+def function(x):
+    return math.log10(x + 5) - math.cos(x)
+def bisection(a, b, tochnost=0.01):
+    if function(a) * function(b) >= 0:
+        return None
+    while (b - a) / 2 > tochnost:
+        mid = (a + b) / 2
+        if function(mid) == 0:
+            return mid
+        elif function(a) * function(mid) < 0:
+            b = mid
+        else:
+            a = mid
+    return (a + b) / 2
+def secushaya(x0, x1, tochnost=0.01):
+    while abs(x1 - x0) > tochnost:
+        if function(x1) - function(x0) == 0:
+            break
+        x_next = x1 - function(x1) * (x1 - x0) / (function(x1) - function(x0))
+        x0, x1 = x1, x_next
+    return x1
+a, b = 0, 1
+root_bisect = bisection(a, b)
+root_secant = secushaya(a, b)
+print(f"Root by bisection method: {root_bisect:.3f}")
+print(f"Root by secant method: {root_secant:.3f}")
+\end{lstlisting}
+\subsection{Код №2 приложения main.py}
+\label{sec:exp:code2}
+\begin{lstlisting}[language=Python]
+import numpy as np
+A = np.array([
+    [-0.2, 1.6, -0.1],
+    [-0.3, 0.1, -1.5],
+    [1.2, -0.2, 0.3]
+], dtype=float)
+B = np.array([0.3, 0.4, -0.6], dtype=float)
+def gauss_method(A, B):
+    n = len(B)
+    M = np.hstack([A, B.reshape(-1, 1)])
+    for i in range(n):
+        pivot = i + np.argmax(abs(M[i:, i]))
+        M[[i, pivot]] = M[[pivot, i]]
+        M[i] = M[i] / M[i, i]
+        for j in range(i + 1, n):
+            M[j] -= M[j, i] * M[i]
+    x = np.zeros(n)
+    for i in range(n - 1, -1, -1):
+        x[i] = M[i, -1] - np.sum(M[i, i+1:n] * x[i+1:n])
+    return x
+solution = gauss_method(A, B)
+print("Solution of the system (Gauss method):")
+print(f"x1 = {solution[0]:.3f}, x2 = {solution[1]:.3f}, x3 = {solution[2]:.3f}")
+\end{lstlisting}
+
+\end{equation}
+\section{Изображения вывода программы}
+\label{sec:Conclusion}
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.5\textwidth]{number1.jpg} 
+    \caption{Вывод приложения №1}\label{fig:matrix}
+    \centering
+    \includegraphics[width=0.5\textwidth]{number2.jpg} 
+    \caption{Вывод приложения №2}\label{fig:matrix}
 \end{figure}
 
 \section{Список литературы}
-\begin{thebibliography}{9}
-\bibitem{Knuth-2003}Кнут Д.Э. Всё про \TeX. --- Москва: Изд. Вильямс, 2003 г. [cite: 4]
-\bibitem{Lvovsky-2003}Львовский С.М. Набор и верстка в системе \LaTeX{}. --- 3-е издание, 2003 г. [cite: 4]
-\bibitem{Voroncov-2005}Воронцов К.В. \LaTeX{} в примерах. 2005 г. [cite: 4]
+\label{sec:literature}
+\begin{thebibliography}{}
+\bibitem{Knuth-2003} Кнут Д.Э. Всё про \TeX. --- Москва: Изд. Вильямс, 2003 г. 550 с.
+\bibitem{Lvovsky-2003} Львовский С.М. Набор и верстка в системе \LaTeX{}. --- 3-е изд., 2003 г.
+\bibitem{Voroncov-2005} Воронцов К.В. \LaTeX{} в примерах. 2005 г.
+\bibitem{Amosov} Амосов А.А., Дубинский Ю.А., Копченова Н.В. Вычислительные методы для инженеров: Учеб. пособие. --- М.: Высш. шк., 1994. 544 с.
+\bibitem{Bakhvalov} Бахвалов Н.С., Жидков Н.П., Кобельков Г.М. Численные методы. --- М.: Наука, 1987.
+\bibitem{Berman} Берман Г.Н. Сборник задач по курсу математического анализа. --- М.: Наука, 1972. 416 с.
+\bibitem{Boglaev} Боглаев Ю.П. Вычислительная математика и программирование. --- М.: Высшая школа, 1990.
+\bibitem{Vetrova} Ветрова В.Т. Сборник физических задач по общему курсу высшей математики. --- Мн.: Высшая школа, 1997. 202 с.
+\bibitem{Gould} Гулд Х., Тоболчник Я. Компьютерное моделирование в физике. --- М.: Мир, 1990.
+\bibitem{Demidovich1} Демидович Б.П., Марон И.А., Шувалова Э.З. Основы вычислительной математики. --- М.: Наука, 1966.
+\bibitem{Demidovich2} Демидович Б.П., Марон И.А., Шувалова Э.З. Численные методы анализа. --- М.: Наука, 1967.
+\bibitem{Zavarykin} Заварыкин В.М., Житомирский В.Г., Лапчик М.П. Численные методы. --- М.: Просвещение, 1990. 176 с.
+\bibitem{Ikramov} Икрамов Х.Д. Численные методы линейной алгебры. Решение линейных уравнений. --- М.: Знание, 1987.
 \end{thebibliography}
+
 \end{document}

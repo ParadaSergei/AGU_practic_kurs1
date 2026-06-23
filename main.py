@@ -1,41 +1,60 @@
-import numpy as np
-def get_matrix_from_input():
-    try:
-        rows = int(input("Введите количество строк: "))
-        if rows <= 0: raise ValueError("Количество строк должно быть > 0")
-        matrix = []
-        for i in range(rows):
-            row = list(map(float, input(f"Введите элементы {i+1}-й строки через пробел: ").split()))
-            matrix.append(row)
-            
-        if len(set(len(r) for r in matrix)) > 1:
-            raise ValueError("Все строки должны иметь одинаковую длину!")
-        return matrix
-    except ValueError as e:
-        print(f"Ошибка ввода: {e}")
+import math
+
+def function(x):
+    return math.log10(x + 5) - math.cos(x)
+
+def bisection(a, b, tochnost=0.01):
+    if function(a) * function(b) >= 0:
         return None
-def calculate_rank(matrix):
-    A = np.array(matrix, dtype=float)
-    rows, cols = A.shape
-    rank = 0
-    pivot_row = 0
-    for j in range(cols):
-        if pivot_row >= rows:
+    while (b - a) / 2 > tochnost:
+        mid = (a + b) / 2
+        if function(mid) == 0:
+            return mid
+        elif function(a) * function(mid) < 0:
+            b = mid
+        else:
+            a = mid
+    return (a + b) / 2
+def secushaya(x0, x1, tochnost=0.01):
+    while abs(x1 - x0) > tochnost:
+        if function(x1) - function(x0) == 0:
             break
-            
-        max_idx = np.argmax(np.abs(A[pivot_row:, j])) + pivot_row
-        if np.isclose(A[max_idx, j], 0):
-            continue
-        A[[pivot_row, max_idx]] = A[[max_idx, pivot_row]]
-        
-        for i in range(pivot_row + 1, rows):
-            factor = A[i, j] / A[pivot_row, j]
-            A[i, j:] -= factor * A[pivot_row, j:]
-            
-        pivot_row += 1
-        rank += 1
-    return rank
-matrix_data = get_matrix_from_input()
-if matrix_data is not None:
-    rank = calculate_rank(matrix_data)
-    print(f"Ранг матрицы равен: {rank}")
+        x_next = x1 - function(x1) * (x1 - x0) / (function(x1) - function(x0))
+        x0, x1 = x1, x_next
+    return x1
+
+a, b = 0, 1
+root_bisect = bisection(a, b)
+root_secant = secushaya(a, b)
+print(f"Root by bisection method: {root_bisect:.3f}")
+print(f"Root by secant method: {root_secant:.3f}")
+
+
+
+import numpy as np
+
+A = np.array([
+    [-0.2, 1.6, -0.1],
+    [-0.3, 0.1, -1.5],
+    [1.2, -0.2, 0.3]
+], dtype=float)
+
+B = np.array([0.3, 0.4, -0.6], dtype=float)
+def gauss_method(A, B):
+    n = len(B)
+    M = np.hstack([A, B.reshape(-1, 1)])
+    
+    for i in range(n):
+        pivot = i + np.argmax(abs(M[i:, i]))
+        M[[i, pivot]] = M[[pivot, i]]
+        M[i] = M[i] / M[i, i]
+        for j in range(i + 1, n):
+            M[j] -= M[j, i] * M[i]
+    x = np.zeros(n)
+    for i in range(n - 1, -1, -1):
+        x[i] = M[i, -1] - np.sum(M[i, i+1:n] * x[i+1:n])
+    return x
+solution = gauss_method(A, B)
+
+print("Solution of the system (Gauss method):")
+print(f"x1 = {solution[0]:.3f}, x2 = {solution[1]:.3f}, x3 = {solution[2]:.3f}")
